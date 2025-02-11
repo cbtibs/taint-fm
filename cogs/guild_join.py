@@ -1,67 +1,52 @@
 """Cog for handling actions when the bot joins a new guild."""
 
 import discord
+import logging
 from discord.ext import commands
 from typing import Optional
 
-def get_welcome_channel(guild: discord.Guild, bot_member: discord.Member) -> Optional[discord.TextChannel]:
-    """
-    Determines the best channel to send a welcome message when the bot joins a guild.
-    
-    The function tries the guild's system channel. If that's not available,
-    it falls back to the first text channel where the bot has permission to send messsages.
-    
-    Args:
-        guild (discord.Guild): The guild the bot has joined
-        bot_member (discord.Member): The bot's member instance in the guild.
+logger = logging.getLogger(__name__)
 
-    Returns:
-        Optional[discord.TextChannel]: A channel where the welcome message can be sent,
-        or None if no suitabel channel is found.
-    """
+def get_welcome_channel(guild: discord.Guild, bot_member: discord.Member) -> Optional[discord.TextChannel]:
+    logger.debug(f"Searching for welcome channel in guild: {guild.name} (ID: {guild.id})")
     channel = guild.system_channel
-    if channel is None:
+    if channel:
+        logger.debug(f"Using system channel: {channel.name} (ID: {channel.id})")
+    else:
         for text_channel in guild.text_channels:
             if text_channel.permissions_for(bot_member).send_messages:
                 channel = text_channel
+                logger.debug(f"Found text channel: {channel.name} (ID: {channel.id})")
                 break
+    if channel is None:
+        logger.debug(f"No suitable channel found in guild: {guild.name} (ID: {guild.id})")
     return channel
 
 class GuildJoinCog(commands.Cog):
-    """
-    Cog that listens for the on_guild_join event and sends a welcome message.
-    """
-
+    """Cog that listens for the on_guild_join event and sends a welcome message."""
     def __init__(self, bot: commands.Bot) -> None:
-        """
-        Initializes the cog with the bot instance.
-
-        Args:
-            bot (commands.Bot): The bot instance.
-        """
         self.bot = bot
+        logger.info("GuildJoinCog has been loaded.")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
-        """
-        Event listener that triggers when the bot joins a new guild.
-
-        It attempts to send a welcome message in an appropriate channel.
-        """
+        logger.info(f"Joined new guild: {guild.name} (ID: {guild.id})")
         channel = get_welcome_channel(guild, guild.me)
         if channel is not None:
-            await channel.send("Hello everyone!")
+            try:
+                await channel.send("Hello everyone!")
+                logger.info(
+                    f"Sent welcome message in channel: {channel.name} (ID: {channel.id}) "
+                    f"in guild: {guild.name} (ID: {guild.id})"
+                )
+            except Exception as e:
+                logger.exception(
+                    f"Failed to send welcome message in channel: {channel.name} (ID: {channel.id}) "
+                    f"in guild: {guild.name} (ID: {guild.id}): {e}"
+                )
         else:
-            print(f"Could not find a channel to send a message in {guild.name}")
+            logger.warning(f"Could not find a channel to send a message in guild: {guild.name} (ID: {guild.id})")
 
-def setup(bot: commands.Bot) -> None:
-    """
-    Sets up the cog.
-
-    This function is used by discord.py to load the cog.
-
-    Args:
-        bot (commands.Bot): The bot instance.
-    """
-
-    bot.add_cog(GuildJoinCog(bot))
+async def setup(bot: commands.Bot) -> None:
+    logger.info("Setting up GuildJoinCog.")
+    await bot.add_cog(GuildJoinCog(bot))

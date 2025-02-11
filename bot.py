@@ -1,16 +1,17 @@
-"""Entry point for the Discord bot
-This module intializes the bot, loads the cogs, and runs the bot.
-"""
-
 import os
 import discord
+import logging
+import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
+from logging_config import setup_logging
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+setup_logging()
+logger = logging.getLogger("bot")
 
-COMMAND_PREFIX ="!"
+COMMAND_PREFIX = "!"
 intents = discord.Intents.default()
 intents.guilds = True
 intents.messages = True
@@ -19,20 +20,22 @@ bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 @bot.event
 async def on_ready() -> None:
-    """Event triggered when the bost has successfully connected to Discord."""
-    print(f'Loggin in as {bot.user} and ready to serve')
+    logger.info(f"Logged in as {bot.user} and ready to serve")
 
-def load_cogs() -> None:
-    """Loads all cogs"""
+async def load_cogs() -> None:
+    """Asynchronously load all cogs from the ./cogs directory."""
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py") and not filename.startswith("__"):
             cog_name = f"cogs.{filename[:-3]}"
             try:
-                bot.load_extension(cog_name)
-                print(f"Loaded cog: {cog_name}")
+                await bot.load_extension(cog_name)
+                logger.info(f"Loaded cog: {cog_name}")
             except Exception as e:
-                print(f"Failed to load cog {cog_name}: {e}")
+                logger.exception(f"Failed to load cog {cog_name}: {e}")
+
+async def main():
+    await load_cogs()
+    await bot.start(TOKEN)
 
 if __name__ == "__main__":
-    load_cogs()
-    bot.run(TOKEN)
+    asyncio.run(main())
