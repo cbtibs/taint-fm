@@ -15,6 +15,7 @@ COMMAND_PREFIX = "!"
 intents = discord.Intents.default()
 intents.guilds = True
 intents.messages = True
+intents.message_content = True
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
