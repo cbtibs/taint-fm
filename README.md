@@ -69,4 +69,5 @@ Below are the available commands:
 * Add queue pagination
 * Add persistent queues, `!loop` and `!shuffle`
 * Add `!volume`
+* Tweak FFMPEG options
 * Dockerize
