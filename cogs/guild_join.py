@@ -7,6 +7,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+
 def get_welcome_channel(
     guild: discord.Guild, bot_member: discord.Member
 ) -> Optional[discord.TextChannel]:
@@ -36,6 +37,7 @@ def get_welcome_channel(
     if channel is None:
         logger.debug("No suitable channel found in guild: %s (ID: %d)", guild.name, guild.id)
     return channel
+
 
 class GuildJoinCog(commands.Cog):
     """Cog that listens for the on_guild_join event and sends a welcome message."""
@@ -75,6 +77,7 @@ class GuildJoinCog(commands.Cog):
                 "Could not find a channel to send a message in guild: %s (ID: %d)",
                 guild.name, guild.id
             )
+
 
 async def setup(bot: commands.Bot) -> None:
     """Sets up the GuildJoinCog by adding it to the bot.
