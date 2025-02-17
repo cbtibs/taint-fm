@@ -5,15 +5,13 @@ using the __call__ pattern. External calls (extraction and download) are patched
 successful operations.
 """
 
-import asyncio
 import contextlib
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from discord.ext import commands
+from cogs.youtube_audio import YouTubeAudioCog
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
-
-from cogs.youtube_audio import YouTubeAudioCog
 
 
 class DummyContext:

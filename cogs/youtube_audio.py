@@ -1,4 +1,4 @@
-# cogs/youtube_audio_cog.py
+"""Cog for handling downloading and playing back youtube audio."""
 
 import logging
 import discord
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 FFMPEG_OPTIONS = {
     "options": "-vn"
 }
+
 
 class YouTubeAudioCog(commands.Cog):
     """A Discord Cog that provides YouTube audio playback by downloading files first.
@@ -108,7 +109,7 @@ class YouTubeAudioCog(commands.Cog):
             await ctx.send(f"Added **{tracks[0].title}** to the queue.")
         else:
             await ctx.send(f"Added **{count}** items to the queue.")
- 
+
         if not ctx.voice_client.is_playing():
             await self._play_next(ctx)
 
@@ -168,7 +169,7 @@ class YouTubeAudioCog(commands.Cog):
             ctx.voice_client.stop()
             self._cleanup_current_file()
             await ctx.send("Skipped the current song.")
-            
+
         else:
             await ctx.send("No song is currently playing.")
 
@@ -193,7 +194,7 @@ class YouTubeAudioCog(commands.Cog):
         lines = []
         for i, track in enumerate(self.queue, start=1):
             line = f"{i}. {track.title}"
-            if sum(len(l) for l in lines) + len(line) > 1900:
+            if sum(len(line) for line in lines) + len(line) > 1900:
                 lines.append(f"...and {len(self.queue) - i + 1} more.")
                 break
             lines.append(line)
@@ -219,6 +220,7 @@ class YouTubeAudioCog(commands.Cog):
         channel = ctx.voice_client.channel
         await ctx.voice_client.disconnect()
         await ctx.send(f"Disconnected from {channel}")
+
 
 async def setup(bot: commands.Bot) -> None:
     """Adds the YouTubeAudioCog to the bot.
