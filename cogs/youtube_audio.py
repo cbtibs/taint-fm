@@ -6,6 +6,7 @@ import asyncio
 import os
 
 from discord.ext import commands
+from typing import Optional
 
 from utils.youtube_extractor import YouTubeExtractor
 from utils.music_queue import MusicQueue, Track
@@ -36,6 +37,7 @@ class YouTubeAudioCog(commands.Cog):
         self.play_lock = asyncio.Lock()
         self.extractor = YouTubeExtractor()
         self.created_files = set()
+        self.current_file_path: Optional[str] = None
 
     async def cog_unload(self):
         """Called automatically when this cog is unloaded.
@@ -126,6 +128,8 @@ class YouTubeAudioCog(commands.Cog):
                     None, lambda: self.extractor.download_audio_file(next_track.webpage_url)
                 )
                 # Keep track of it for potential cleanup if needed
+                self.current_file_path = file_path
+                logger.info("Current file_path: %s", self.current_file_path)
                 self.created_files.add(file_path)
             except Exception as e:
                 logger.error("Failed to download file for %s: %s", next_track.webpage_url, e)
@@ -143,13 +147,7 @@ class YouTubeAudioCog(commands.Cog):
 
             def after_playing(error: Exception) -> None:
                 """Callback after the current track finishes or errors."""
-                try:
-                    os.remove(file_path)
-                    self.created_files.discard(file_path)
-                    logger.info("Removed file after playing: %s", file_path)
-                except OSError as remove_err:
-                    logger.warning("Could not remove temp file %s: %s", file_path, remove_err)
-
+                self._cleanup_current_file()
                 if error:
                     logger.error("Player error: %s", error)
 
@@ -168,9 +166,22 @@ class YouTubeAudioCog(commands.Cog):
         """Skips the currently playing track if any."""
         if ctx.voice_client and ctx.voice_client.is_playing():
             ctx.voice_client.stop()
+            self._cleanup_current_file()
             await ctx.send("Skipped the current song.")
+            
         else:
             await ctx.send("No song is currently playing.")
+
+    def _cleanup_current_file(self) -> None:
+        """Removes the current file if it exists and updates tracking."""
+        if hasattr(self, "current_file_path") and self.current_file_path:
+            try:
+                os.remove(self.current_file_path)
+                self.created_files.discard(self.current_file_path)
+                logger.info("Removed file: %s", self.current_file_path)
+            except OSError as e:
+                logger.warning("Could not remove file %s: %s", self.current_file_path, e)
+            self.current_file_path = None
 
     @commands.command(name="queue", help="Shows the queued songs.")
     async def queue_info_command(self, ctx: commands.Context) -> None:
@@ -208,7 +219,6 @@ class YouTubeAudioCog(commands.Cog):
         channel = ctx.voice_client.channel
         await ctx.voice_client.disconnect()
         await ctx.send(f"Disconnected from {channel}")
-
 
 async def setup(bot: commands.Bot) -> None:
     """Adds the YouTubeAudioCog to the bot.

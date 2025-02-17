@@ -24,7 +24,7 @@ class YouTubeExtractor:
             "default_search": "auto",
             "source_address": "0.0.0.0",
             "noplaylist": False,
-            "extract_flat": True,  # Key: we want a flat extraction
+            "extract_flat": True,
         }
         self.meta_ytdl = yt_dlp.YoutubeDL(self.meta_extractor_options)
 
