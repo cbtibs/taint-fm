@@ -1,6 +1,4 @@
-# Makefile for Taint-FM Discord Bot
-
-.PHONY: start stop test lint clean
+.PHONY: start stop test lint clean build container-test
 
 # Start the bot
 start:
@@ -26,3 +24,18 @@ lint:
 clean:
 	@echo "Cleaning up..."
 	find . -name '__pycache__' -exec rm -rf {} +
+
+# Build the Docker image
+build:
+	@echo "Building Docker image..."
+	docker build -t discord-bot:test .
+
+# Run container structure tests
+container-test: build
+	@echo "Running container structure tests..."
+	container-structure-test test --image discord-bot:test --config tests/container/container-structure-tests.yaml
+
+# Lint the Dockerfile using hadolint
+container-lint:
+	@echo "Running container hadolint..."
+	hadolint Dockerfile
