@@ -22,7 +22,8 @@ commandTests:
   - name: "Check Environment Variables"
     command: "env"
     expectedOutput:
-     - "DISCORD_BOT_TOKEN=test-token"
+     - "PYTHONUNBUFFERED=1"
+     - "PYTHON_VERSION=3.12.*"
 
   - name: "Check Working Directory"
     command: "pwd"
