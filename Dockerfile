@@ -1,5 +1,5 @@
 # hadolint global ignore=DL3008
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 
 ENV WORKDIR=/app
