@@ -20,10 +20,11 @@ commandTests:
       - "ffmpeg"
 
   - name: "Check Environment Variables"
-    command: "env"
+    command: "sh"
+    args: ["-c", "env | grep PYTHON"]
     expectedOutput:
-     - "PYTHONUNBUFFERED=1"
-     - "PYTHON_VERSION=3.12.*"
+      - "PYTHONUNBUFFERED=1"
+      - "PYTHON_VERSION=3.12.*"
 
   - name: "Check Working Directory"
     command: "pwd"
